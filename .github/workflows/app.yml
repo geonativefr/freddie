@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         php:
-          - 8.3
+          - 8.4
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -42,7 +42,6 @@ jobs:
     strategy:
       matrix:
         php:
-          - 8.3
           - 8.4
           - 8.5
     steps:
@@ -84,7 +83,6 @@ jobs:
           - "redis://localhost?size=10000&trimInterval=0.5&pingInterval=0.1"
           - "redis://localhost?size=10000&trimInterval=0.5&pingInterval=0.1&readTimeout=2"
         php:
-          - 8.3
           - 8.4
           - 8.5
     steps:
