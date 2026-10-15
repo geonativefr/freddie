@@ -78,18 +78,9 @@ final class ResumableResponseParser implements ParserInterface
                 }
             }
 
-            while ($this->open !== [] && null !== $reply) {
-                $last = array_key_last($this->open);
-                $this->open[$last][1][] = $reply;
-                if (count($this->open[$last][1]) < $this->open[$last][0]) {
-                    $reply = null;
-                    break;
-                }
-                $reply = new MultiBulkReply(array_pop($this->open)[1]);
-            }
-
-            if (null !== $reply) {
-                $replies[] = $reply;
+            $complete = $this->absorb($reply);
+            if (null !== $complete) {
+                $replies[] = $complete;
             }
         }
 
@@ -99,10 +90,28 @@ final class ResumableResponseParser implements ParserInterface
     }
 
     /**
+     * Files a finished reply into the multi-bulk being filled, and returns the top-level reply it ends, if any.
+     */
+    private function absorb(ModelInterface $reply): ?ModelInterface
+    {
+        while ($this->open !== []) {
+            $last = array_key_last($this->open);
+            $this->open[$last][1][] = $reply;
+            if (count($this->open[$last][1]) < $this->open[$last][0]) {
+                return null;
+            }
+            $reply = new MultiBulkReply(array_pop($this->open)[1]);
+        }
+
+        return $reply;
+    }
+
+    /**
      * Returns the reply the line completes, or null when more bytes are needed
      * (a bulk payload, the items of a multi-bulk) or when the parser is stalled.
      *
      * @throws ParserException
+     * @phpstan-impure
      */
     private function readHeader(string $line): ?ModelInterface
     {
