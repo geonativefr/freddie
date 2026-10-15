@@ -6,8 +6,11 @@ namespace Freddie\Tests\Unit\Hub\Transport\Redis;
 
 use Freddie\Hub\Transport\Redis\RedisTransport;
 use Freddie\Hub\Transport\Redis\RedisTransportFactory;
+use Freddie\Hub\Transport\Redis\ResumableProtocolFactory;
+use Freddie\Hub\Transport\Redis\ResumableResponseParser;
 use Clue\React\Redis\Client;
 use Clue\React\Redis\Factory;
+use ReflectionProperty;
 
 it('supports Redis DSNs', function (string $dsn, bool $expected) {
     $factory = new RedisTransportFactory();
@@ -51,4 +54,24 @@ it('reads the reconciliation backlog on a 3rd connection, not the pinged one', f
     expect($transport->reader)->toBeInstanceOf(Client::class);
     expect($transport->reader)->not()->toBe($transport->redis);
     expect($transport->reader)->not()->toBe($transport->subscriber);
+});
+
+it('creates resumable response parsers', function () {
+    expect((new ResumableProtocolFactory())->createResponseParser())->toBeInstanceOf(ResumableResponseParser::class);
+});
+
+it('talks to Redis with the resumable protocol by default', function () {
+    $factory = (new ReflectionProperty(RedisTransportFactory::class, 'factory'))->getValue(new RedisTransportFactory());
+    $protocol = (new ReflectionProperty(Factory::class, 'protocol'))->getValue($factory);
+
+    expect($protocol)->toBeInstanceOf(ResumableProtocolFactory::class);
+});
+
+it('keeps using the Redis factory it is given', function () {
+    $given = new Factory();
+    $property = new ReflectionProperty(RedisTransportFactory::class, 'factory');
+
+    $transportFactory = new RedisTransportFactory($given);
+
+    expect($property->getValue($transportFactory))->toBe($given);
 });

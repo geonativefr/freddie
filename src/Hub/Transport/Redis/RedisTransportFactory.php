@@ -14,7 +14,7 @@ use function max;
 final readonly class RedisTransportFactory implements TransportFactoryInterface
 {
     public function __construct(
-        private Factory $factory = new Factory(),
+        private Factory $factory = new Factory(protocol: new ResumableProtocolFactory()),
         private RedisSerializer $serializer = new RedisSerializer(),
     ) {
     }
