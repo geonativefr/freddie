@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Freddie\Tests\Unit\Hub;
 
+use FrameworkX\App;
 use Freddie\Hub\Hub;
 use Freddie\Hub\Transport\TransportInterface;
 use Freddie\Message\Message;
@@ -13,6 +14,7 @@ use Generator;
 use InvalidArgumentException;
 use React\EventLoop\Loop;
 use React\Promise\PromiseInterface;
+use ReflectionProperty;
 use RuntimeException;
 use Symfony\Component\Uid\Ulid;
 
@@ -76,3 +78,27 @@ it('complains when requesting an unrecognized option', function () {
 it('dies', function () {
     Hub::die(new RuntimeException('😵'));
 })->throws(RuntimeException::class, '😵');
+
+it('stops the loop when the app cannot start', function () {
+    $app = new class () extends App {
+        public function run(): void
+        {
+            throw new RuntimeException('Address already in use');
+        }
+    };
+    $stopped = new ReflectionProperty(Loop::class, 'stopped');
+    $stopped->setValue(null, false);
+
+    try {
+        (new Hub(app: $app))->run();
+    } catch (RuntimeException $e) {
+        expect($e->getMessage())->toBe('Address already in use');
+        expect($stopped->getValue())->toBeTrue();
+
+        return;
+    } finally {
+        $stopped->setValue(null, false);
+    }
+
+    $this->fail('The error should leave the hub.');
+});
