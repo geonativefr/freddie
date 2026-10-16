@@ -58,13 +58,15 @@ final class Hub implements HubInterface
         }
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     public function run(): void
     {
         $this->started = true;
-        $this->app->run();
+        try {
+            $this->app->run();
+        } catch (Throwable $e) {
+            // Without Loop::stop(), the loop would run again at shutdown and keep the process alive
+            self::die($e);
+        }
     }
 
     public function publish(Update $update): PromiseInterface
