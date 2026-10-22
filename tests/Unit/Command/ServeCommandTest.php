@@ -25,7 +25,13 @@ it('masks the transport password in its output', function () {
     $params = new ParameterBag(['transport_dsn' => 'redis://john:secret@127.0.0.1:6379?key=foo&password=other']);
     $command = new ServeCommand(new Hub(), $params);
     $commandTester = new CommandTester($command);
-    $commandTester->execute([]);
+    $listen = $_SERVER['X_LISTEN'];
+    $_SERVER['X_LISTEN'] = '127.0.0.1:0';
+    try {
+        $commandTester->execute([]);
+    } finally {
+        $_SERVER['X_LISTEN'] = $listen;
+    }
     $display = $commandTester->getDisplay();
     expect($display)->toContain('Using transport: redis://john:***@127.0.0.1:6379?key=foo&password=***.')
         ->and($display)->not->toContain('secret')
