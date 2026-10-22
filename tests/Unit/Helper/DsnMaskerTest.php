@@ -11,8 +11,14 @@ it('masks the password of a DSN', function (string $dsn, string $expected) {
 })->with([
     'redis, password without user' => ['redis://:secret@127.0.0.1:6379', 'redis://:***@127.0.0.1:6379'],
     'redis, password with user' => ['redis://john:secret@127.0.0.1:6379', 'redis://john:***@127.0.0.1:6379'],
-    'rediss, password without user' => ['rediss://:secret@redis.example.org:6380', 'rediss://:***@redis.example.org:6380'],
-    'rediss, password with user' => ['rediss://john:secret@redis.example.org:6380', 'rediss://john:***@redis.example.org:6380'],
+    'rediss, password without user' => [
+        'rediss://:secret@redis.example.org:6380',
+        'rediss://:***@redis.example.org:6380',
+    ],
+    'rediss, password with user' => [
+        'rediss://john:secret@redis.example.org:6380',
+        'rediss://john:***@redis.example.org:6380',
+    ],
     'user-info password with path and query' => [
         'redis://john:secret@127.0.0.1:6379/2?key=foo&channel=bar',
         'redis://john:***@127.0.0.1:6379/2?key=foo&channel=bar',
