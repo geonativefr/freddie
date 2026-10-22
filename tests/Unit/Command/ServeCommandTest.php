@@ -19,3 +19,15 @@ it('works', function () {
     $commandTester->execute([]);
     expect($commandTester->getStatusCode())->toBe(Command::SUCCESS);
 });
+
+it('masks the transport password in its output', function () {
+    Loop::futureTick(fn () => Loop::stop());
+    $params = new ParameterBag(['transport_dsn' => 'redis://john:secret@127.0.0.1:6379?key=foo&password=other']);
+    $command = new ServeCommand(new Hub(), $params);
+    $commandTester = new CommandTester($command);
+    $commandTester->execute([]);
+    $display = $commandTester->getDisplay();
+    expect($display)->toContain('Using transport: redis://john:***@127.0.0.1:6379?key=foo&password=***.')
+        ->and($display)->not->toContain('secret')
+        ->and($display)->not->toContain('other');
+});

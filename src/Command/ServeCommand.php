@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Freddie\Command;
 
+use Freddie\Helper\DsnMasker;
 use Freddie\Hub\Hub;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -30,7 +31,7 @@ final class ServeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // @phpstan-ignore-next-line
-        $output->writeln(sprintf('Using transport: %s.', $this->params->get('transport_dsn')));
+        $output->writeln(sprintf('Using transport: %s.', DsnMasker::mask($this->params->get('transport_dsn'))));
         $this->hub->run();
 
         return self::SUCCESS;
