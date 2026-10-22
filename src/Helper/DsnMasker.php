@@ -10,13 +10,14 @@ final class DsnMasker
 {
     public const string MASK = '***';
 
-    private const array PASSWORD_PATTERNS = [
-        '/(:)[^:\/]*(@)/',
-        '/([?&]password=).*?($|&)/',
-    ];
+    private const string USER_INFO_PATTERN = '~^([^:/?#]+://[^:@/?#]*:)[^@/?#]*(@)~';
+
+    private const string QUERY_PATTERN = '~([?&]password=)[^&#]*~';
 
     public static function mask(string $dsn): string
     {
-        return (string) preg_replace(self::PASSWORD_PATTERNS, '$1' . self::MASK . '$2', $dsn);
+        $masked = preg_replace(self::USER_INFO_PATTERN, '$1' . self::MASK . '$2', $dsn);
+
+        return (string) preg_replace(self::QUERY_PATTERN, '$1' . self::MASK, (string) $masked);
     }
 }

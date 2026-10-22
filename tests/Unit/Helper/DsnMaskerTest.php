@@ -50,4 +50,15 @@ it('masks the password of a DSN', function (string $dsn, string $expected) {
     ],
     'no password, php' => ['php://default', 'php://default'],
     'no password, php with query' => ['php://localhost?size=10000', 'php://localhost?size=10000'],
+    'password containing a colon' => ['redis://u:pa:ss@h', 'redis://u:***@h'],
+    'at sign in the query without user-info' => ['redis://h:6379?key=a@b', 'redis://h:6379?key=a@b'],
+    'password query parameter repeated' => [
+        'redis://127.0.0.1:6379?password=a&password=b',
+        'redis://127.0.0.1:6379?password=***&password=***',
+    ],
+    'password query parameter before a fragment' => ['redis://h?password=x#frag', 'redis://h?password=***#frag'],
+    'password with an IPv6 host' => ['redis://:pw@[::1]:6379', 'redis://:***@[::1]:6379'],
+    'user without password' => ['redis://john@host', 'redis://john@host'],
+    'empty password query parameter' => ['redis://h?password=', 'redis://h?password=***'],
+    'unix socket' => ['redis+unix://:pw@/var/run/redis.sock', 'redis+unix://:***@/var/run/redis.sock'],
 ]);
